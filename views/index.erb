@@ -4,3 +4,11 @@
 <% else %>
   <a href='/login'>Login with Dropbox</a>
 <% end %>
+
+<% if @users %>
+  <ul>
+    <% @users.each do |u| %>
+      <li><%= u.inspect %></li>
+    <% end %>
+  </ul>
+<% end %>
