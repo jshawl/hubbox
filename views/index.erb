@@ -1,0 +1,6 @@
+<% if @client %>
+ Welcome, <%= @client %>
+  <a href='/logout'>Logout</a>
+<% else %>
+  <a href='/login'>Login with Dropbox</a>
+<% end %>
