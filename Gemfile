@@ -2,6 +2,8 @@ source 'http://rubygems.org'
 
 gem 'sinatra'
 gem 'sinatra-contrib'
+gem 'rest-client'
+gem 'httparty'
 gem 'pry'
 gem 'sinatra-activerecord'
 gem 'sqlite3'

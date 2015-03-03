@@ -1,12 +1,14 @@
 require 'sinatra'
 require 'rest-client'
 require 'sinatra/base'
+require 'httparty'
 require 'sinatra/reloader'
 require 'sinatra/activerecord'
 require 'dropbox_sdk'
 require 'pry'
 require './env' if File.exists? 'env.rb'
 require './models/user'
+require './models/project'
 
   ActiveRecord::Base.establish_connection(
     :adapter => 'sqlite3',
@@ -88,7 +90,22 @@ require './models/user'
     redirect to '/'
   end
 
-
+  post '/repos' do
+   repo = {
+     name: params["name"]
+   }
+   res = HTTParty.post('https://api.github.com/user/repos?access_token=' + session['gh_access_token'],{
+     body: repo.to_json
+   }).body
+   @p = Project.new
+   binding.pry
+   @p.repo_id = JSON.parse(res)["id"].to_s
+   @p.repo_name = JSON.parse(res)["name"]
+   @u = User.find_by(gh_access_token: session['gh_access_token'])
+   @p.user_id = @u.id
+   @p.save
+   redirect to '/'
+  end
 
 
 
