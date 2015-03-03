@@ -10,6 +10,7 @@ require 'pry'
 require './env' if File.exists? 'env.rb'
 require './models/user'
 require './models/project'
+require './github'
 
 
   ActiveRecord::Base.establish_connection(
@@ -45,7 +46,7 @@ require './models/project'
   get '/auth/github' do
     url = GH_CALLBACK
     client_id = GH_CLIENT_ID
-    redirect to "https://github.com/login/oauth/authorize?redirect_uri=#{url}&scope=public_repo&client_id=#{client_id}" 
+    Github.login
   end
 
   get '/logout' do
@@ -72,15 +73,8 @@ require './models/project'
   end
 
   get '/auth/github/callback' do
-    session_code = request.env['rack.request.query_hash']['code']
-    result = RestClient.post('https://github.com/login/oauth/access_token', {
-      :client_id => GH_CLIENT_ID,
-      :client_secret => GH_CLIENT_SECRET,
-      :code => session_code
-    },  :accept => :json)
-    res = JSON.parse( result )
-    session['gh_access_token'] = res['access_token']
-    user = JSON.parse(RestClient.get('https://api.github.com/user?access_token=' + session['gh_access_token']))
+    Github.callback
+    user = Github.user_info
     if session['access_token'] && session['access_token'] != ""
       @u = User.find_by( db_access_token: session['access_token'])
     else
@@ -94,13 +88,7 @@ require './models/project'
   end
 
   post '/projects' do
-   repo = {
-     name: params["name"]
-   }
-   res = HTTParty.post('https://api.github.com/user/repos?access_token=' + session['gh_access_token'],{
-     body: repo.to_json
-   }).body
-
+   res = Github.create_repo params["name"]
    @p = Project.new
    @p.repo_id = JSON.parse(res)["id"].to_s
    @p.repo_name = JSON.parse(res)["name"]
@@ -124,41 +112,10 @@ require './models/project'
     delta = u.delta
     delta["entries"].each do |f|
       if f[1] == nil
-	path = f[0].gsub(/^\/#{@p.repo_name}/,'')
-	commit = {
-	  path: path,
-	  message: "Deleted by Hubbox - #{Time.now.to_i.to_s}",
-	}
-	url = URI.escape("https://api.github.com/repos/#{@p.user.gh_login}/#{@p.repo_name}/contents#{commit[:path]}?access_token=" + session['gh_access_token'])
-	res = HTTParty.get(url).body
-	commit[:sha] = JSON.parse(res)['sha']
-	res = HTTParty.delete(url,{
-	  body: commit.to_json
-	}).body
+	Github.delete_file f[0], @p
       elsif !f[1]["is_dir"]
-	contents = client.get_file( f[1]["path"] ) 
-	path = f[1]['path'].gsub(/^\/#{@p.repo_name}/,'')
-	commit = {
-	  path: path,
-	  message: "Synced by Hubbox - #{Time.now.to_i.to_s}",
-	  content: Base64.encode64(contents)
-	}
-	url = "https://api.github.com/repos/#{@p.user.gh_login}/#{@p.repo_name}/contents#{commit[:path]}?access_token=" + session['gh_access_token']
-	begin
-	  url = "https://api.github.com/repos/#{@p.user.gh_login}/#{@p.repo_name}/contents#{commit[:path]}?access_token=" + session['gh_access_token']
-	  res = HTTParty.get(url).body
-	  commit[:sha] = JSON.parse(res)['sha']
-	rescue
-	 end
-	puts "updating #{url}"
-	res = HTTParty.put(url,{
-	  body: commit.to_json
-	}).body
+	Github.update_file f[1]['path'], @p
       end
     end
     redirect to '/projects/' + @p.id.to_s
   end
-
-
-
-
