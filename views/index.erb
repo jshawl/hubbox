@@ -1,9 +1,21 @@
-<% if @client %>
- Welcome, <%= @client %>
-  <a href='/logout'>Logout</a>
+<% if @dropbox %>
+ Welcome, <%= @dropbox %>
+ Connected Dropbox successfully.
 <% else %>
-  <a href='/login'>Login with Dropbox</a>
+  <a href='/auth/dropbox'>Login with Dropbox</a>
 <% end %>
+
+<% if @github %>
+ Connected GitHub successfully.
+<% else %>
+  <a href='/auth/github'>Login with GitHub</a>
+<% end %>
+
+<% if @dropbox || @github %>
+  <a href='/logout'>Logout</a>
+<% end %>
+
+
 
 <% if @users %>
   <ul>
