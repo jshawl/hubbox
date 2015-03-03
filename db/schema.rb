@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 20150303005046) do
     t.string   "db_cursor"
     t.string   "gh_uid"
     t.string   "gh_access_token"
+    t.string   "gh_login"
     t.string   "email"
     t.datetime "created_at"
     t.datetime "updated_at"

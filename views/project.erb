@@ -1,0 +1,6 @@
+<%= @p.inspect %>
+
+<form method="post" action="/sync">
+  <input type="hidden" name='id' value="<%= @p.id %>">
+  <button>Update GitHub</button>
+</form>

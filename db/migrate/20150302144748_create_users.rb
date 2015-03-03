@@ -6,6 +6,7 @@ class CreateUsers < ActiveRecord::Migration
       t.string :db_cursor
       t.string :gh_uid
       t.string :gh_access_token
+      t.string :gh_login
       t.string :email
 
       t.timestamps

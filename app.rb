@@ -1,4 +1,5 @@
 require 'sinatra'
+require "base64"
 require 'rest-client'
 require 'sinatra/base'
 require 'httparty'
@@ -9,6 +10,7 @@ require 'pry'
 require './env' if File.exists? 'env.rb'
 require './models/user'
 require './models/project'
+
 
   ActiveRecord::Base.establish_connection(
     :adapter => 'sqlite3',
@@ -86,27 +88,76 @@ require './models/project'
     end
     @u.gh_access_token = session['gh_access_token']
     @u.gh_uid = user["id"].to_s
+    @u.gh_login = user["login"]
     @u.save
     redirect to '/'
   end
 
-  post '/repos' do
+  post '/projects' do
    repo = {
      name: params["name"]
    }
    res = HTTParty.post('https://api.github.com/user/repos?access_token=' + session['gh_access_token'],{
      body: repo.to_json
    }).body
+
    @p = Project.new
-   binding.pry
    @p.repo_id = JSON.parse(res)["id"].to_s
    @p.repo_name = JSON.parse(res)["name"]
    @u = User.find_by(gh_access_token: session['gh_access_token'])
+   client = DropboxClient.new( @u.db_access_token )
+   client.file_create_folder( @p.repo_name )
    @p.user_id = @u.id
    @p.save
-   redirect to '/'
+   redirect to '/projects/' + @p.id.to_s
+  end
+ 
+  get '/projects/:id' do
+    @p = Project.find( params[:id] )
+    erb :project
   end
 
+  post '/sync' do
+    @p = Project.find( params[:id] )
+    client = DropboxClient.new( @p.user.db_access_token )
+    u = @p.user
+    delta = u.delta
+    delta["entries"].each do |f|
+      if f[1] == nil
+	path = f[0].gsub(/^\/#{@p.repo_name}/,'')
+	commit = {
+	  path: path,
+	  message: "Deleted by Hubbox - #{Time.now.to_i.to_s}",
+	}
+	url = URI.escape("https://api.github.com/repos/#{@p.user.gh_login}/#{@p.repo_name}/contents#{commit[:path]}?access_token=" + session['gh_access_token'])
+	res = HTTParty.get(url).body
+	commit[:sha] = JSON.parse(res)['sha']
+	res = HTTParty.delete(url,{
+	  body: commit.to_json
+	}).body
+      elsif !f[1]["is_dir"]
+	contents = client.get_file( f[1]["path"] ) 
+	path = f[1]['path'].gsub(/^\/#{@p.repo_name}/,'')
+	commit = {
+	  path: path,
+	  message: "Synced by Hubbox - #{Time.now.to_i.to_s}",
+	  content: Base64.encode64(contents)
+	}
+	url = "https://api.github.com/repos/#{@p.user.gh_login}/#{@p.repo_name}/contents#{commit[:path]}?access_token=" + session['gh_access_token']
+	begin
+	  url = "https://api.github.com/repos/#{@p.user.gh_login}/#{@p.repo_name}/contents#{commit[:path]}?access_token=" + session['gh_access_token']
+	  res = HTTParty.get(url).body
+	  commit[:sha] = JSON.parse(res)['sha']
+	rescue
+	 end
+	puts "updating #{url}"
+	res = HTTParty.put(url,{
+	  body: commit.to_json
+	}).body
+      end
+    end
+    redirect to '/projects/' + @p.id.to_s
+  end
 
 
 
