@@ -2,6 +2,7 @@ source 'http://rubygems.org'
 
 gem 'sinatra'
 gem 'sinatra-contrib'
+gem 'webmock'
 gem 'rest-client'
 gem 'httparty'
 gem 'pry'

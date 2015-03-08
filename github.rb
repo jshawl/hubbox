@@ -1,8 +1,9 @@
-class Github
+require 'sinatra/base'
+class Github < Sinatra::Base
   def self.login
-    redirect to "https://github.com/login/oauth/authorize?redirect_uri=#{url}&scope=public_repo&client_id=#{client_id}" 
+    "https://github.com/login/oauth/authorize?redirect_uri=#{GH_CALLBACK}&scope=public_repo&client_id=#{GH_CLIENT_ID}" 
   end
-  def self.callback
+  def self.callback request
     session_code = request.env['rack.request.query_hash']['code']
     result = RestClient.post('https://github.com/login/oauth/access_token', {
       :client_id => GH_CLIENT_ID,
@@ -10,10 +11,10 @@ class Github
       :code => session_code
     },  :accept => :json)
     res = JSON.parse( result )
-    session['gh_access_token'] = res['access_token']
+    return res
   end
-  def self.user_info
-    JSON.parse(RestClient.get('https://api.github.com/user?access_token=' + session['gh_access_token']))
+  def self.user_info at
+    JSON.parse(RestClient.get('https://api.github.com/user?access_token=' + at ))
   end
   def self.create_repo name
     repo = {

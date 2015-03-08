@@ -44,9 +44,7 @@ require './github'
   end
 
   get '/auth/github' do
-    url = GH_CALLBACK
-    client_id = GH_CLIENT_ID
-    Github.login
+    redirect to Github.login
   end
 
   get '/logout' do
@@ -73,8 +71,9 @@ require './github'
   end
 
   get '/auth/github/callback' do
-    Github.callback
-    user = Github.user_info
+    res = Github.callback request
+    session['gh_access_token'] = res['access_token']
+    user = Github.user_info session['gh_access_token']
     if session['access_token'] && session['access_token'] != ""
       @u = User.find_by( db_access_token: session['access_token'])
     else

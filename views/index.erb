@@ -17,22 +17,18 @@
 
 
 
-<% if @users %>
-  <ul>
-    <% @users.each do |u| %>
-      <li>
-      <ul>
-	<% u.projects.each do |p| %>
-	  <li><%= p.inspect %></li>
-	<% end %>
-      </ul><%= u.inspect %></li>
-    <% end %>
-  </ul>
-<% end %>
 
 <% if @github && @dropbox %>
   <form method='post' action='/projects'>
     <input type='text' name='name'>
     <button type='submit'>Create Repo</button>
   </form>
+<% if @users %>
+    <% @users.each do |u| %>
+      <ul>
+	<% u.projects.each do |p| %>
+	  <li><a href='/projects/<%= p.id %>'><%= p.repo_name %></a></li>
+	<% end %>
+    <% end %>
+<% end %>
 <% end %>
