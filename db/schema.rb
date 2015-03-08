@@ -14,9 +14,11 @@
 ActiveRecord::Schema.define(version: 20150303005046) do
 
   create_table "projects", force: :cascade do |t|
-    t.integer "user_id"
-    t.string  "repo_id"
-    t.string  "repo_name"
+    t.integer  "user_id"
+    t.string   "repo_id"
+    t.string   "repo_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "users", force: :cascade do |t|

@@ -24,7 +24,7 @@ require './github'
   get '/' do
     session['access_token'] ||= ''
     if session['access_token'] != ''
-      @dropbox = get_dropbox_client.account_info['display_name']
+      session['db_user_name'] = get_dropbox_client.account_info['display_name']
       @users = User.all
     end
     if session['gh_access_token']
@@ -87,7 +87,7 @@ require './github'
   end
 
   post '/projects' do
-   res = Github.create_repo params["name"]
+   res = Github.create_repo params["name"], session['gh_access_token']
    @p = Project.new
    @p.repo_id = JSON.parse(res)["id"].to_s
    @p.repo_name = JSON.parse(res)["name"]
@@ -116,5 +116,6 @@ require './github'
 	Github.update_file f[1]['path'], @p
       end
     end
+    @p.touch
     redirect to '/projects/' + @p.id.to_s
   end

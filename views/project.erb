@@ -1,4 +1,6 @@
-<%= @p.repo_name %>
+<h2><%= @p.repo_name %></h2>
+
+<p>Last Updated at <%= @p.updated_at %></p>
 
 <form method="post" action="/sync">
   <input type="hidden" name='id' value="<%= @p.id %>">

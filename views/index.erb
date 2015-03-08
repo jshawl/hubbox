@@ -1,24 +1,5 @@
-<% if @dropbox %>
- Welcome, <%= @dropbox %>
- Connected Dropbox successfully.
-<% else %>
-  <a href='/auth/dropbox'>Login with Dropbox</a>
-<% end %>
 
-<% if @github %>
- Connected GitHub successfully.
-<% else %>
-  <a href='/auth/github'>Login with GitHub</a>
-<% end %>
-
-<% if @dropbox || @github %>
-  <a href='/logout'>Logout</a>
-<% end %>
-
-
-
-
-<% if @github && @dropbox %>
+<% if session['gh_access_token'] && session['db_user_name'] %>
   <form method='post' action='/projects'>
     <input type='text' name='name'>
     <button type='submit'>Create Repo</button>

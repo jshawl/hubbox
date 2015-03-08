@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head></head>
+  <body>
+    <h1><a href='/'>Hubbox</a></h1>
+    <% if session['db_user_name'] %>
+     Connected Dropbox successfully.
+    <% else %>
+      <a href='/auth/dropbox'>Login with Dropbox</a>
+    <% end %>
+
+    <% if session['gh_access_token']%>
+     Connected GitHub successfully.
+    <% else %>
+      <a href='/auth/github'>Login with GitHub</a>
+    <% end %>
+
+    <% if session['db_user_name'] && session['gh_access_token'] %>
+      <a href='/logout'>Logout
+	<%= session['db_user_name'] %>
+      </a>
+    <% end %>
+    <%= yield %>
+  </body>
+</html>

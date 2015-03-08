@@ -16,11 +16,11 @@ class Github < Sinatra::Base
   def self.user_info at
     JSON.parse(RestClient.get('https://api.github.com/user?access_token=' + at ))
   end
-  def self.create_repo name
+  def self.create_repo name, at
     repo = {
      name: name
     }
-    return HTTParty.post('https://api.github.com/user/repos?access_token=' + session['gh_access_token'],{
+    return HTTParty.post('https://api.github.com/user/repos?access_token=' + at, {
      body: repo.to_json
     }).body
   end
