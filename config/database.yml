@@ -1,0 +1,7 @@
+development:
+  adapter: postgresql
+  database: hubbox_dev
+
+production:
+  adapter: postgresql
+  database: hubbox

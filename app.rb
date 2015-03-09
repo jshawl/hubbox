@@ -1,5 +1,5 @@
 require 'sinatra'
-require "base64"
+require 'base64'
 require 'rest-client'
 require 'sinatra/base'
 require 'httparty'
@@ -13,11 +13,8 @@ require './models/project'
 require './github'
 
 
-  ActiveRecord::Base.establish_connection(
-    :adapter => 'sqlite3',
-    :database =>  'db/sqlite3.db'
-  )
 
+  set :database_file, "./config/database.yml"
   enable :sessions
   set :session_secret, DB_SESSION_SECRET
 
