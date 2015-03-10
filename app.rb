@@ -16,7 +16,7 @@ require './github'
 
   set :database_file, "./config/database.yml"
   enable :sessions
-  set :session_secret, DB_SESSION_SECRET
+  set :session_secret, ENV['DB_SESSION_SECRET']
 
   get '/' do
     session['access_token'] ||= ''
@@ -31,8 +31,8 @@ require './github'
   end
 
   def get_auth
-    redirect_uri = DB_CALLBACK
-    flow = DropboxOAuth2Flow.new( DB_APP_KEY, DB_APP_SECRET, redirect_uri, session, :dropbox_auth_csrf_token)
+    redirect_uri = ENV['DB_CALLBACK']
+    flow = DropboxOAuth2Flow.new( ENV['DB_APP_KEY'], ENV['DB_APP_SECRET'], redirect_uri, session, :dropbox_auth_csrf_token)
   end
 
   get '/auth/dropbox' do

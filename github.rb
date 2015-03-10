@@ -1,13 +1,13 @@
 require 'sinatra/base'
 class Github < Sinatra::Base
   def self.login
-    "https://github.com/login/oauth/authorize?redirect_uri=#{GH_CALLBACK}&scope=public_repo&client_id=#{GH_CLIENT_ID}" 
+    "https://github.com/login/oauth/authorize?redirect_uri=#{ENV['GH_CALLBACK']}&scope=public_repo&client_id=#{ENV['GH_CLIENT_ID']}" 
   end
   def self.callback request
     session_code = request.env['rack.request.query_hash']['code']
     result = RestClient.post('https://github.com/login/oauth/access_token', {
-      :client_id => GH_CLIENT_ID,
-      :client_secret => GH_CLIENT_SECRET,
+      :client_id => ENV['GH_CLIENT_ID'],
+      :client_secret => ENV['GH_CLIENT_SECRET'],
       :code => session_code
     },  :accept => :json)
     res = JSON.parse( result )
